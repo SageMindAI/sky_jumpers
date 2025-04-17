@@ -147,8 +147,8 @@ export function initPlayer(x: number, y: number): Player {
       const centerX = this.x + this.width / 2;
       const centerY = this.y + this.height / 2 - 10 + bounceEffect;
       
-      // Base body shape - slightly rounded rectangle
-      ctx.fillStyle = '#3498db'; // Blue
+      // Base body shape - slightly rounded rectangle with orange color for better contrast
+      ctx.fillStyle = '#e67e22'; // Orange color instead of blue
       
       // Main body - adjust shape based on animation
       if (animState === 'jumping') {
@@ -164,7 +164,7 @@ export function initPlayer(x: number, y: number): Player {
         ctx.fill();
         
         // Arms up
-        ctx.fillStyle = '#3498db';
+        ctx.fillStyle = '#e67e22'; // Orange color
         ctx.beginPath();
         // Left arm
         ctx.roundRect(
@@ -200,7 +200,7 @@ export function initPlayer(x: number, y: number): Player {
           Math.sin(Date.now() / 100 + frame) * 10 : 
           Math.sin(Date.now() / 400) * 3;
         
-        ctx.fillStyle = '#3498db';
+        ctx.fillStyle = '#e67e22'; // Orange color
         ctx.beginPath();
         // Left arm
         ctx.roundRect(
@@ -230,7 +230,7 @@ export function initPlayer(x: number, y: number): Player {
     
     renderLegs(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
       // Legs animations
-      ctx.fillStyle = '#2980b9'; // Slightly darker blue
+      ctx.fillStyle = '#d35400'; // Darker orange for legs
       
       if (animState === 'running') {
         // Running legs with alternating positions
@@ -304,8 +304,8 @@ export function initPlayer(x: number, y: number): Player {
         headY + 15,
         20
       );
-      gradient.addColorStop(0, '#3498db');
-      gradient.addColorStop(1, '#2980b9');
+      gradient.addColorStop(0, '#f39c12'); // Lighter orange
+      gradient.addColorStop(1, '#e67e22'); // Darker orange
       
       ctx.fillStyle = gradient;
       ctx.beginPath();

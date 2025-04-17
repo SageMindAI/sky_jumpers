@@ -32,7 +32,7 @@ export function setupBackgrounds(canvas: HTMLCanvasElement, ctx: CanvasRendering
   const layers: BackgroundLayer[] = [
     // Sky gradient layer (static, always visible)
     {
-      color: '#87CEEB', // Light blue
+      color: '#2c3e50', // Darker blue/navy background instead of light blue
       parallaxFactor: 0,
       y: 0,
       height: canvas.height,
@@ -42,22 +42,22 @@ export function setupBackgrounds(canvas: HTMLCanvasElement, ctx: CanvasRendering
     
     // Distant mountains/city (moves very slowly)
     {
-      color: '#4b6cb7', // Bluish purple
+      color: '#34495e', // Darker blue-gray
       parallaxFactor: 0.05,
       y: canvas.height * 0.5,
       height: canvas.height * 0.5,
       initialized: true,
-      elements: generateCityscape(canvas.width * 3, canvas.height * 0.5, '#3a5795')
+      elements: generateCityscape(canvas.width * 3, canvas.height * 0.5, '#2c3e50')
     },
     
     // Mid-distance hills/buildings (moves moderately)
     {
-      color: '#3a5795', // Darker blue
+      color: '#2c3e50', // Dark blue
       parallaxFactor: 0.2,
       y: canvas.height * 0.6,
       height: canvas.height * 0.4,
       initialized: true,
-      elements: generateHills(canvas.width * 2, canvas.height * 0.4, '#2a4075')
+      elements: generateHills(canvas.width * 2, canvas.height * 0.4, '#1a2530')
     },
     
     // Clouds layer (moves at moderate speed)

@@ -14,8 +14,15 @@ export function initBuildings(canvasWidth: number, canvasHeight: number): Buildi
   const buildingCount = 8 // More buildings
   
   const buildingWidth = canvasWidth / buildingCount
-  const minHeight = canvasHeight * 0.4
-  const maxHeight = canvasHeight * 0.6
+  
+  // Adjust building heights for landscape mode
+  // Make buildings shorter in landscape mode (wide screen)
+  const isLandscape = canvasWidth > canvasHeight;
+  const maxHeightFactor = isLandscape ? 0.4 : 0.6; // Lower max height in landscape
+  const minHeightFactor = isLandscape ? 0.25 : 0.4; // Lower min height in landscape
+  
+  const minHeight = canvasHeight * minHeightFactor;
+  const maxHeight = canvasHeight * maxHeightFactor;
   
   // Calculate max jump height to ensure buildings are within reach
   const maxJumpHeight = 180 // Approximate max jump height based on physics
@@ -32,42 +39,46 @@ export function initBuildings(canvasWidth: number, canvasHeight: number): Buildi
   
   // Then generate the rest of the buildings with proper spacing
   for (let i = 0; i < buildingCount - 1; i++) {
-    const height = Math.random() * (maxHeight - minHeight) + minHeight
+    const height = Math.random() * (maxHeight - minHeight) + minHeight;
     
     // Calculate x position - ensure buildings are within jumping distance
-    let x = Math.random() * (canvasWidth - buildingWidth)
+    let x = Math.random() * (canvasWidth - buildingWidth);
     
     // Calculate y position - ensure they're reachable with our jump height
-    // Buildings at higher levels
-    const y = canvasHeight - height - (Math.random() * maxJumpHeight * 0.7)
+    // In landscape mode, keep buildings lower to the ground
+    const maxBuildingY = isLandscape ? 
+      canvasHeight - height - (maxJumpHeight * 0.3) : 
+      canvasHeight - height - (maxJumpHeight * 0.7);
+    
+    const y = Math.max(canvasHeight * 0.3, maxBuildingY);
     
     // Ensure buildings are positioned properly relative to each other
     // Check if this building would overlap with any existing building
-    let overlaps = false
+    let overlaps = false;
     for (const existing of buildings) {
       if (
         x < existing.x + existing.width + 10 &&
         x + buildingWidth > existing.x - 10
       ) {
-        overlaps = true
-        break
+        overlaps = true;
+        break;
       }
     }
     
     // Skip if overlapping
-    if (overlaps) continue
+    if (overlaps) continue;
     
     const building = createBuilding(
       x,
       y,
       buildingWidth - 10,
       height
-    )
+    );
     
-    buildings.push(building)
+    buildings.push(building);
   }
   
-  return buildings
+  return buildings;
 }
 
 // Create a single building
