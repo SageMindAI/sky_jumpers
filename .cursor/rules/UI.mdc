@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 description: Rules for developing UI components for the Sky Jumpers game.
 path:
   - src/components/**

@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 description: |-
   Global rules for the Sky Jumpers game project.
   Provides high-level context and instructs on documentation usage.

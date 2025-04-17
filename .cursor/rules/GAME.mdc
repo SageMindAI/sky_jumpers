@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 description: Rules for working with the game engine implementation.
 path:
   - src/game/**
