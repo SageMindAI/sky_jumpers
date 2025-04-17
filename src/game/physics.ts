@@ -1,6 +1,6 @@
 // Constants
 export const GRAVITY = 0.4         // Increased gravity for shorter jumps
-export const JUMP_VELOCITY = -8    // Reduced jump for better visibility
+export const JUMP_VELOCITY = -12   // Increased jump height for better gameplay
 export const TERMINAL_VELOCITY = 10 // Same terminal velocity
 
 // Physics system
@@ -65,12 +65,9 @@ export function setupPhysics() {
       gameState.score = Math.max(0, gameState.score - 50)
     }
     
-    // Keep player within horizontal bounds
+    // Keep player within horizontal bounds - only prevent going off left edge
     if (player.x < 0) {
       player.x = 0
-      player.velocityX = 0
-    } else if (player.x + player.width > gameState.canvasWidth) {
-      player.x = gameState.canvasWidth - player.width
       player.velocityX = 0
     }
     

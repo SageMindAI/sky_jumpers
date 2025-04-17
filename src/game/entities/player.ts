@@ -9,7 +9,7 @@ export function initPlayer(x: number, y: number): Player {
     height: 50,
     velocityY: 0,
     velocityX: 0,
-    maxVelocityX: 8,
+    maxVelocityX: 5,
     accelerationX: 0,
     friction: 0.9, // Friction to slow down horizontal movement
     isJumping: false,
@@ -26,8 +26,8 @@ export function initPlayer(x: number, y: number): Player {
       }
       
       // Cap horizontal velocity (allow faster movement to the right)
-      if (this.velocityX > this.maxVelocityX * 1.5) {
-        this.velocityX = this.maxVelocityX * 1.5;
+      if (this.velocityX > this.maxVelocityX * 1.2) {
+        this.velocityX = this.maxVelocityX * 1.2;
       } else if (this.velocityX < -this.maxVelocityX) {
         this.velocityX = -this.maxVelocityX;
       }
@@ -35,11 +35,6 @@ export function initPlayer(x: number, y: number): Player {
       // Stop if very slow
       if (Math.abs(this.velocityX) < 0.1) {
         this.velocityX = 0;
-      }
-      
-      // Add a slight auto-movement forward to encourage progression
-      if (this.velocityX === 0 && !this.isJumping) {
-        this.velocityX = 0.5; // Very slight natural rightward drift
       }
       
       // Update horizontal position based on velocity
@@ -147,31 +142,26 @@ export function initPlayer(x: number, y: number): Player {
     
     jump() {
       if (!this.isJumping && this.jumpCooldown <= 0) {
-        // Reduced jump force for more controlled jumps
-        this.velocityY = this.jumpForce * 0.9;
+        this.velocityY = this.jumpForce;
         this.isJumping = true;
         this.jumpCooldown = 250; // Same cooldown between jumps
         
         // Add a small horizontal boost in the direction the player is moving
-        // but keep it modest to prevent flying off too far
         if (this.velocityX > 0.5) {
-          this.velocityX += 0.5; // Reduced horizontal boost
+          this.velocityX += 0.5; // Small horizontal boost
         } else if (this.velocityX < -0.5) {
-          this.velocityX -= 0.5; // Reduced horizontal boost
-        } else {
-          // If not moving, boost forward
-          this.velocityX = 2;
+          this.velocityX -= 0.5; // Small horizontal boost
         }
       }
     },
     
-    moveLeft(force = 0.8) {
+    moveLeft(force = 0.6) {
       this.accelerationX = -force;
     },
     
-    moveRight(force = 0.8) {
+    moveRight(force = 0.6) {
       // Allow stronger acceleration to the right
-      this.accelerationX = force * 1.2;
+      this.accelerationX = force * 1.1;
     },
     
     stopMoving() {
