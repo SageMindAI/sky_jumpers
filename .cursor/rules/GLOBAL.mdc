@@ -10,6 +10,8 @@ alwaysApply: true
 instructions: |-
   # Sky Jumpers - AI Development Rules
 
+    NOTE: NEVER RUN "pnpm run dev". Let the user run this
+
   ## 1. Documentation First for Context (IMPORTANT!)
   This project uses a hierarchical documentation system via README.md files:
   - **ALWAYS** start with the relevant README.md file(s) for your current task before extensive code searching

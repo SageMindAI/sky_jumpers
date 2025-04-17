@@ -5,7 +5,7 @@ This directory contains the core game engine implementation for Sky Jumpers.
 ## Key Files
 
 - `engine.ts` - Main game loop and engine initialization
-- `renderer.ts` - Canvas rendering functionality
+- `renderer.ts` - Canvas rendering functionality with camera system
 - `physics.ts` - Simple physics system for gravity, collisions, etc.
 - `input.ts` - Touch and keyboard input handling
 - `entities/` - Game object implementations
@@ -40,6 +40,31 @@ function gameLoop(timestamp) {
 }
 ```
 
+## Physics System
+
+The physics system is intentionally simple:
+
+- Gravity-based jumping with adjustable parameters
+- Simple rectangle collision detection
+- Momentum-based horizontal movement with friction
+- Delta-time normalization for consistent gameplay across devices
+
+Constants are tuned for mobile gameplay:
+```typescript
+const GRAVITY = 0.4
+const JUMP_VELOCITY = -8
+const TERMINAL_VELOCITY = 10
+```
+
+## Camera System
+
+A minimalist camera system follows the player during jumps:
+
+- Subtle vertical tracking that keeps buildings in view
+- Limited movement range to prevent disorientation
+- Smooth transitions using interpolation
+- Automatic reset to base position after jumping
+
 ## Input Handling
 
 Touch controls are the primary input method:
@@ -48,22 +73,18 @@ Touch controls are the primary input method:
 - Swipe left/right to move
 - Tap on power-ups to activate
 
-Keyboard controls are available as a fallback for desktop testing.
+Keyboard controls are available as a fallback for desktop testing:
 
-## Physics System
+- Space/Arrow Up to jump
+- Left/Right arrows to move
+- R key to reset player position
 
-The physics system is intentionally simple:
+## Safety Features
 
-- Basic gravity for jumping mechanics
-- Simple rectangle collision detection
-- No complex physics simulation to keep performance high on mobile
-
-## Performance Considerations
-
-- Only render entities visible on screen
-- Use object pooling for frequently created/destroyed objects
-- Minimize garbage collection during gameplay
-- Use simple shapes for collision detection
+- Player reset if they go too far off-screen
+- Emergency reset button in UI
+- Automatic building regeneration on major screen resize
+- Boundary checks to keep player in playable area
 
 ## KISS Principle
 
