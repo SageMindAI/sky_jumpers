@@ -1,17 +1,17 @@
 import { resetPlayerToStartingPlatform } from './engine'
+import { setupTouchControls, TouchControl } from './ui/touchControls'
 
 // Input state
 const inputState = {
-  touchStartY: 0,
-  touchStartX: 0,
-  swipeThreshold: 50,
   isMobile: false,
   keyDown: {
     left: false,
     right: false,
     up: false
   },
-  game: null as any
+  game: null as any,
+  touchControls: null as any,
+  activeTouches: new Map<number, {x: number, y: number, control: TouchControl | null}>()
 }
 
 // Detect if the user is on a mobile device
@@ -27,8 +27,46 @@ export function setupInputHandlers(game: any) {
   inputState.game = game
   inputState.isMobile = detectMobile()
   
-  // Adjust swipe threshold based on device
-  inputState.swipeThreshold = inputState.isMobile ? 30 : 50
+  // Initialize touch controls if on mobile
+  if (inputState.isMobile) {
+    // Only setup touch controls if we have a canvas
+    if (game && game.canvas) {
+      inputState.touchControls = setupTouchControls(
+        game.canvas,
+        // Jump callback
+        () => {
+          if (game.state.entities.player) {
+            game.state.entities.player.jump();
+          }
+        },
+        // Move callback (direction, force)
+        (direction, force) => {
+          if (game.state.entities.player) {
+            if (direction > 0) {
+              game.state.entities.player.moveRight(force);
+            } else {
+              game.state.entities.player.moveLeft(force);
+            }
+          }
+        },
+        // Stop moving callback
+        () => {
+          if (game.state.entities.player) {
+            game.state.entities.player.stopMoving();
+          }
+        }
+      );
+      
+      // Set controls to active
+      inputState.touchControls.setActive(true);
+      
+      // Add touch event listeners to the canvas
+      game.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+      game.canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+      game.canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+      game.canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+    }
+  }
   
   // Listen for orientation or resize changes
   window.addEventListener('resize', () => {
@@ -38,59 +76,80 @@ export function setupInputHandlers(game: any) {
 
 // Touch handlers
 export function handleTouchStart(e: TouchEvent) {
-  if (!inputState.game) return
+  e.preventDefault();
+  if (!inputState.game || !inputState.touchControls) return;
   
-  const touch = e.touches[0]
-  inputState.touchStartY = touch.clientY
-  inputState.touchStartX = touch.clientX
+  // Process each touch
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const touch = e.changedTouches[i];
+    const touchId = touch.identifier;
+    const x = touch.clientX;
+    const y = touch.clientY;
+    
+    // Try to assign to a control
+    let assignedControl: TouchControl | null = null;
+    
+    // Check each control to see if it claims this touch
+    for (const control of inputState.touchControls.controls) {
+      if (control.handleTouchStart(x, y, touchId)) {
+        assignedControl = control;
+        break;
+      }
+    }
+    
+    // Store touch data
+    inputState.activeTouches.set(touchId, {
+      x, y, control: assignedControl
+    });
+  }
 }
 
 export function handleTouchMove(e: TouchEvent) {
-  if (!inputState.game) return
+  e.preventDefault();
+  if (!inputState.game || !inputState.touchControls) return;
   
-  // Prevent scrolling
-  e.preventDefault()
+  // Process each changed touch
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const touch = e.changedTouches[i];
+    const touchId = touch.identifier;
+    const x = touch.clientX;
+    const y = touch.clientY;
+    
+    // Check if we're tracking this touch
+    const touchData = inputState.activeTouches.get(touchId);
+    if (touchData) {
+      // Update stored position
+      touchData.x = x;
+      touchData.y = y;
+      
+      // Forward to the control if assigned
+      if (touchData.control) {
+        touchData.control.handleTouchMove(x, y, touchId);
+      }
+    }
+  }
 }
 
 export function handleTouchEnd(e: TouchEvent) {
-  if (!inputState.game || !inputState.game.state.entities.player) return
+  e.preventDefault();
+  if (!inputState.game || !inputState.touchControls) return;
   
-  const touch = e.changedTouches[0]
-  const diffY = inputState.touchStartY - touch.clientY
-  const diffX = touch.clientX - inputState.touchStartX
-  
-  // Swipe up = jump (more sensitive on mobile)
-  if (diffY > inputState.swipeThreshold) {
-    inputState.game.state.entities.player.jump()
-  }
-  
-  // Swipe left/right = move
-  if (Math.abs(diffX) > inputState.swipeThreshold) {
-    const force = Math.min(1.5, Math.abs(diffX) / 100); // Stronger swipe = faster movement
-    if (diffX > 0) {
-      inputState.game.state.entities.player.moveRight(force)
+  // Process each ended touch
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const touch = e.changedTouches[i];
+    const touchId = touch.identifier;
+    
+    // Check if we're tracking this touch
+    const touchData = inputState.activeTouches.get(touchId);
+    if (touchData) {
+      // Forward to the control if assigned
+      if (touchData.control) {
+        touchData.control.handleTouchEnd(touchId);
+      }
       
-      // Stop movement after a short time (simulates a swipe)
-      setTimeout(() => {
-        if (inputState.game && inputState.game.state.entities.player) {
-          inputState.game.state.entities.player.stopMoving()
-        }
-      }, 300)
-    } else {
-      inputState.game.state.entities.player.moveLeft(force)
-      
-      // Stop movement after a short time (simulates a swipe)
-      setTimeout(() => {
-        if (inputState.game && inputState.game.state.entities.player) {
-          inputState.game.state.entities.player.stopMoving()
-        }
-      }, 300)
+      // Remove from tracking
+      inputState.activeTouches.delete(touchId);
     }
-  }
-  
-  // Short tap = simple jump
-  if (Math.abs(diffY) < 20 && Math.abs(diffX) < 20) {
-    inputState.game.state.entities.player.jump()
   }
 }
 
@@ -164,14 +223,7 @@ export function setupKeyboardHandlers(game: any) {
   })
 }
 
-// Helper function to move player - kept for backward compatibility
-function movePlayer(amount: number) {
-  if (!inputState.game || !inputState.game.state.entities.player) return
-  
-  const player = inputState.game.state.entities.player
-  if (amount > 0) {
-    player.moveRight()
-  } else {
-    player.moveLeft()
-  }
+// Get touch controls for rendering
+export function getTouchControls() {
+  return inputState.touchControls;
 } 

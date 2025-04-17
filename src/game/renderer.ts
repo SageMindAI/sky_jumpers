@@ -1,5 +1,6 @@
 // Renderer for the game
 import { setupBackgrounds } from './backgrounds';
+import { getTouchControls } from './input';
 
 export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
   // Setup any rendering configuration
@@ -127,6 +128,12 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
         `X: ${Math.round(player.x)} | Y: ${Math.round(player.y)} | CameraX: ${Math.round(cameraX)}`,
         20, 90
       );
+    }
+    
+    // Render touch controls if on mobile
+    const touchControls = getTouchControls();
+    if (touchControls) {
+      touchControls.render(ctx);
     }
   }
   
