@@ -37,6 +37,8 @@ export function initEnemies(): Enemy[] {
 
 // Create a single enemy
 function createEnemy(x: number, y: number): Enemy {
+  const type = ENEMY_TYPES[Math.floor(Math.random() * ENEMY_TYPES.length)];
+  
   return {
     x,
     y,
@@ -44,6 +46,9 @@ function createEnemy(x: number, y: number): Enemy {
     height: 20,
     velocityX: 1.5 * (Math.random() > 0.5 ? 1 : -1),
     velocityY: 0.5 * (Math.random() > 0.5 ? 1 : -1),
+    type,
+    bobbleOffset: 0,
+    eyeOffset: 0,
     
     update(deltaTime: number) {
       // Movement is handled by physics system
@@ -84,6 +89,76 @@ function createEnemy(x: number, y: number): Enemy {
       ctx.arc(this.x + 15, this.y + 8, 2, 0, Math.PI * 2)
       ctx.arc(this.x + 25, this.y + 8, 2, 0, Math.PI * 2)
       ctx.fill()
+    },
+    
+    renderSlime(ctx: CanvasRenderingContext2D) {
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      const radius = (this.width / 2) + this.bobbleOffset;
+      
+      // Draw simple slime-like blob
+      ctx.fillStyle = '#CC0000';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Eyes
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX, centerY, radius);
+      }
+    },
+    
+    renderGhost(ctx: CanvasRenderingContext2D) {
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      const radius = (this.width / 2) + this.bobbleOffset;
+      
+      // Simple ghost shape
+      ctx.fillStyle = '#CC0000';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, Math.PI, 0, true);
+      ctx.lineTo(centerX + radius, centerY + radius);
+      ctx.lineTo(centerX - radius, centerY + radius);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Eyes
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX, centerY - radius/4, radius);
+      }
+    },
+    
+    renderBird(ctx: CanvasRenderingContext2D) {
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      const radius = (this.width / 2) + this.bobbleOffset;
+      
+      // Simple bird shape
+      ctx.fillStyle = '#CC0000';
+      ctx.beginPath();
+      ctx.ellipse(centerX, centerY, radius, radius * 0.7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Eyes
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX, centerY, radius);
+      }
+    },
+    
+    renderEyes(ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) {
+      // Eyes
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(centerX - radius * 0.3, centerY - radius * 0.1, radius * 0.2, 0, Math.PI * 2);
+      ctx.arc(centerX + radius * 0.3, centerY - radius * 0.1, radius * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Pupils
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(centerX - radius * 0.3 + this.eyeOffset, centerY - radius * 0.1, radius * 0.1, 0, Math.PI * 2);
+      ctx.arc(centerX + radius * 0.3 + this.eyeOffset, centerY - radius * 0.1, radius * 0.1, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 }
@@ -137,11 +212,11 @@ export function addEnemy(x: number, y: number): Enemy {
       ctx.fill();
       
       // Choose drawing method based on enemy type
-      if (this.type.name === 'slime') {
+      if (this.type.name === 'slime' && this.renderSlime) {
         this.renderSlime(ctx);
-      } else if (this.type.name === 'ghost') {
+      } else if (this.type.name === 'ghost' && this.renderGhost) {
         this.renderGhost(ctx);
-      } else {
+      } else if (this.renderBird) {
         this.renderBird(ctx);
       }
       
@@ -178,7 +253,9 @@ export function addEnemy(x: number, y: number): Enemy {
       ctx.fill();
       
       // Draw eyes
-      this.renderEyes(ctx, centerX, centerY, radius);
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX, centerY, radius);
+      }
     },
     
     renderGhost(ctx: CanvasRenderingContext2D) {
@@ -213,7 +290,9 @@ export function addEnemy(x: number, y: number): Enemy {
       ctx.fill();
       
       // Draw eyes
-      this.renderEyes(ctx, centerX, centerY - radius/4, radius);
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX, centerY - radius/4, radius);
+      }
     },
     
     renderBird(ctx: CanvasRenderingContext2D) {
@@ -272,7 +351,9 @@ export function addEnemy(x: number, y: number): Enemy {
       ctx.fill();
       
       // Draw eyes
-      this.renderEyes(ctx, centerX - radius * 0.2, centerY - radius, radius * 0.6);
+      if (this.renderEyes) {
+        this.renderEyes(ctx, centerX - radius * 0.2, centerY - radius, radius * 0.6);
+      }
     },
     
     renderEyes(ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) {

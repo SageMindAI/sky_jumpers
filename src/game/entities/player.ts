@@ -107,7 +107,7 @@ export function initPlayer(x: number, y: number): Player {
       }
       
       // Determine current animation state
-      let animState;
+      let animState: 'idle' | 'running' | 'jumping';
       let bounceEffect = 0;
       
       if (this.isJumping) {
@@ -126,7 +126,9 @@ export function initPlayer(x: number, y: number): Player {
       const currentFrame = this.animations[animState].currentFrame;
       
       // Body
-      this.renderBody(ctx, bounceEffect, animState, currentFrame);
+      if (this.renderBody) {
+        this.renderBody(ctx, bounceEffect, animState, currentFrame);
+      }
       
       // Shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
@@ -143,7 +145,7 @@ export function initPlayer(x: number, y: number): Player {
       ctx.restore();
     },
     
-    renderBody(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+    renderBody(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) {
       const centerX = this.x + this.width / 2;
       const centerY = this.y + this.height / 2 - 10 + bounceEffect;
       
@@ -222,13 +224,17 @@ export function initPlayer(x: number, y: number): Player {
       }
       
       // Legs
-      this.renderLegs(ctx, bounceEffect, animState, frame);
+      if (this.renderLegs) {
+        this.renderLegs(ctx, bounceEffect, animState, frame);
+      }
       
       // Head
-      this.renderHead(ctx, bounceEffect, animState, frame);
+      if (this.renderHead) {
+        this.renderHead(ctx, bounceEffect, animState, frame);
+      }
     },
     
-    renderLegs(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+    renderLegs(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) {
       // Legs animations
       ctx.fillStyle = '#d35400'; // Darker orange for legs
       
@@ -292,7 +298,7 @@ export function initPlayer(x: number, y: number): Player {
       }
     },
     
-    renderHead(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+    renderHead(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) {
       const headY = this.y - 15 + bounceEffect;
       
       // Head

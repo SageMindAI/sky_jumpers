@@ -45,19 +45,68 @@ export interface Player extends GameObject {
   isJumping: boolean
   jumpForce: number
   jumpCooldown: number
+  facingLeft: boolean
+  animations: {
+    idle: {
+      frameCount: number;
+      frameDuration: number;
+      currentFrame: number;
+      lastFrameTime: number;
+    };
+    running: {
+      frameCount: number;
+      frameDuration: number;
+      currentFrame: number;
+      lastFrameTime: number;
+    };
+    jumping: {
+      frameCount: number;
+      frameDuration: number;
+      currentFrame: number;
+      lastFrameTime: number;
+    };
+  }
   jump: () => void
   moveLeft: (force?: number) => void
   moveRight: (force?: number) => void
   stopMoving: () => void
+  renderBody?: (ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) => void
+  renderLegs?: (ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) => void
+  renderHead?: (ctx: CanvasRenderingContext2D, bounceEffect: number, animState: 'idle' | 'running' | 'jumping', frame: number) => void
 }
 
 export interface Building extends GameObject {
   // Building-specific properties
+  colorSet: {
+    base: string;
+    highlight: string;
+    shadow: string;
+  };
+  windowPattern: {
+    rows: number;
+    cols: number;
+    spacingX: number;
+    spacingY: number;
+    lights: boolean[];
+  };
 }
 
 export interface Enemy extends GameObject {
   velocityX: number
   velocityY: number
+  type: {
+    name: string;
+    baseColor: string;
+    eyeColor: string;
+    pupilColor: string;
+    highlightColor: string;
+  };
+  bobbleOffset: number;
+  eyeOffset: number;
+  renderSlime?: (ctx: CanvasRenderingContext2D) => void;
+  renderGhost?: (ctx: CanvasRenderingContext2D) => void;
+  renderBird?: (ctx: CanvasRenderingContext2D) => void;
+  renderEyes?: (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => void;
 }
 
 export interface PowerUp extends GameObject {
