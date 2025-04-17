@@ -1,0 +1,47 @@
+description: |-
+  Global rules for the Sky Jumpers game project.
+  Provides high-level context and instructs on documentation usage.
+alwaysApply: true
+instructions: |-
+  # Sky Jumpers - AI Development Rules
+
+  ## 1. Documentation First for Context (IMPORTANT!)
+  This project uses a hierarchical documentation system via README.md files:
+  - **ALWAYS** start with the relevant README.md file(s) for your current task before extensive code searching
+  - Follow the documentation hierarchy:
+    - Root `./README.md` for project overview
+    - `/docs/sky_jumpers_technical_architecture.md` for technical architecture
+    - Directory-specific READMEs (e.g., `/src/game/README.md`, `/src/components/README.md`)
+  - **Goal:** Get efficient context from READMEs about structure, intent, and conventions
+
+  ## 2. KISS Principle is PARAMOUNT (Keep It Simple, Stupid)
+  - Prioritize simple, maintainable solutions over complex, clever implementations
+  - Implement the minimum viable solution first, then iterate if needed
+  - Performance optimizations should only be added when proven necessary
+  - Prefer built-in language/framework features over external libraries
+  - Mobile device performance is a key constraint - keep this in mind
+
+  ## 3. Update Documentation WITH Code Changes
+  - After generating or modifying code, update relevant README.md file(s) to reflect changes
+  - Keep documentation concise, focused on purpose and key interactions
+
+  ## 4. Mobile-First Development
+  - This is a touch-based game - all interactions must work well on mobile
+  - Test touch interactions as primary, keyboard/mouse as secondary
+  - Consider performance implications for mobile devices
+
+  ## 5. Technology Stack
+  - Next.js with TypeScript
+  - HTML5 Canvas for game rendering
+  - TailwindCSS for UI components
+  - pnpm for package management (always use pnpm, not npm)
+
+  ## 6. Coding Standards
+  - Use TypeScript for type safety
+  - Functional components with hooks for React
+  - Keep game logic separate from UI components
+  - Follow existing patterns in the codebase
+  - Use clear, descriptive variable and function names
+
+  ## 7. Ask for Clarity
+  - If the provided context is insufficient, ask clarifying questions 

@@ -1,0 +1,49 @@
+description: |-
+  Global rules for the LeadFlow AI project.
+  Provides high-level context, emphasizes simplicity (KISS), and instructs on documentation usage.
+path: "**" # Apply to all files
+instructions: |-
+  # LeadFlow AI - AI Development Rules
+
+  ## 0. Core Principle: Keep It Simple, Stupid (KISS) - HIGHEST PRIORITY
+  - **ALWAYS** favor simple, clear, and straightforward solutions.
+  - Avoid unnecessary complexity, abstraction, or over-engineering.
+  - Solve the immediate problem effectively first, then refactor or enhance if *truly* needed and justified.
+  - Question requests that seem overly complex; suggest simpler alternatives if possible.
+  - Generate clean, readable, and easily maintainable code.
+
+  ## 1. Documentation is Key for Context (IMPORTANT!)
+  This project uses a hierarchical documentation system via README.md files plus high-level design documents.
+  - **ALWAYS** prioritize using the context provided in the relevant `README.md` file(s) for the current task's *local* context before relying solely on broad codebase searches.
+  - Consult the `LeadFlow AI PRD` and `Technical Architecture Document` (in `/docs`) for *overall project goals, requirements, high-level design, and phased rollout plan*. Use these to understand the "why" and the big picture.
+  - Drill down into directory-specific READMEs (e.g., `/prisma/README.md`, `/src/lib/README.md`, `/src/app/api/README.md`, feature/page READMEs in `/app/**/`) for targeted context on *how* things work locally.
+  - **Goal:** Efficient context. Use READMEs for local implementation details and conventions. Use PRD/Arch Docs for high-level understanding. If context seems missing in a README, state that.
+
+  ## 2. Update Documentation WITH Code Changes (CRITICAL!)
+  - After generating or modifying *any* code (components, API routes, functions, types, schemas, background jobs, etc.), you **MUST** identify and **propose updates** to the relevant `README.md` file(s) or other documentation files (like PRD/Arch if major architectural changes occur) to reflect the changes accurately and concisely.
+  - Explain *why* the documentation needs updating based on the code change.
+  - Keep README updates focused on the purpose, key files/modules, core logic/responsibilities, and key interactions relevant to the directory/feature scope. Maintain conciseness (KISS).
+
+  ## 3. Be Succinct and Focused
+  - Provide clear, concise code and explanations, aligning with the KISS principle.
+  - Use code blocks effectively.
+  - Directly address the user's request, using the provided documentation context.
+
+  ## 4. Tech Stack Awareness
+  - Remember the core stack: **Next.js (App Router), React, TypeScript, Prisma (PostgreSQL/Xata), Tailwind CSS, Shadcn/ui, Vercel AI SDK, SendGrid, Zod, Vercel Cron Jobs**.
+  - Generate code consistent with this stack and existing project patterns. Follow KISS – don't introduce new libraries without strong justification.
+
+  ## 5. Code Structure Awareness
+  - Adhere to the project structure outlined in the Technical Architecture Document (e.g., API routes in `/app/api`, core logic in `/lib`, components in `/components`, Prisma schema in `/prisma`). Reference relevant READMEs for guidance.
+  - Place new files in the appropriate directories according to established conventions.
+
+  ## 6. Testing Guidance
+  - **NEVER** attempt to run the project locally (e.g., `pnpm run dev`, `npm run dev`). The user is responsible for running and testing the code.
+  - Focus on generating correct, simple, and logically sound code based on the requirements and context.
+
+  ## 7. Ask for Clarity
+  - If the provided context (documentation or user prompt) is insufficient, or if a request seems overly complex (violates KISS), ask clarifying questions before proceeding.
+files: # Ensure the AI always has access to the core design docs
+  - docs/bot-me_prd.md 
+  - docs/bot-me_lead_flow_technical_architecture.md
+  - README.md # Root README for basic setup/overview 

@@ -1,0 +1,50 @@
+description: Rules for developing UI components for the Sky Jumpers game.
+path:
+  - src/components/**
+  - src/pages/**
+instructions: |-
+  # UI Development Rules
+
+  ## Documentation First
+  - Reference the main UI components documentation in `/src/components/README.md` for context
+  - Understand the component organization before creating new components
+
+  ## KISS Principle for UI
+  - Start with the simplest UI implementation that works
+  - Prefer standard HTML elements and basic styling when possible
+  - Only add complexity when necessary for UX improvement
+  - Use built-in React features before external libraries
+
+  ## Component Guidelines
+  - Use functional components with hooks
+  - Define prop types with TypeScript interfaces
+  - Keep components small and focused on a single responsibility
+  - Minimize state in UI components - game state belongs in the game engine
+  - Use composition over inheritance
+
+  ## Mobile-First Development
+  - Design all UI for touch interaction first
+  - Use appropriate touch target sizes (min 44x44px)
+  - Test on mobile devices or device emulators
+  - Consider different screen sizes and orientations
+
+  ## Styling Best Practices
+  - Use TailwindCSS for styling
+  - Use CSS Modules for component-specific styles
+  - Follow consistent naming conventions
+  - Keep styling simple and performance-focused
+
+  ## Performance Considerations
+  - Minimize unnecessary re-renders
+  - Use React.memo for pure components when beneficial
+  - Lazy load components not needed on initial render
+  - Keep an eye on bundle size
+
+  ## Core Components
+  - `GameCanvas.tsx` - Main canvas wrapper
+  - `TouchControls.tsx` - Mobile touch controls
+  - `GameMenu.tsx` - Menu UI
+  - UI primitives in the `/ui` subdirectory
+  
+files:
+  - src/components/README.md 

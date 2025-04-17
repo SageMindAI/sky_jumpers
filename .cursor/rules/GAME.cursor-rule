@@ -1,0 +1,47 @@
+description: Rules for working with the game engine implementation.
+path:
+  - src/game/**
+instructions: |-
+  # Game Engine Development Rules
+
+  ## Documentation First
+  - Reference the main game engine documentation in `/src/game/README.md` for context
+  - Understand the simple game loop pattern before modifying engine code
+
+  ## KISS Principle for Game Logic
+  - Keep game physics simple - this is not a physics simulation
+  - Use basic collision detection (rectangles or circles) whenever possible
+  - Optimize for performance on mobile devices
+  - Implement the simplest solution that works before adding complexity
+
+  ## Game State Management
+  - Game state should be centralized in the engine
+  - Use a simple state machine for game states (menu, playing, game over)
+  - Avoid complex state management libraries for the game engine
+
+  ## Performance Best Practices
+  - Minimize object creation during the game loop
+  - Use object pooling for frequently created/destroyed objects
+  - Only render entities visible on screen
+  - Use requestAnimationFrame for the game loop
+  - Batch similar operations when possible
+
+  ## Touch Controls
+  - Prioritize simple, intuitive touch controls
+  - Support fallback keyboard controls for testing
+  - Keep input handling logic separate from game logic
+
+  ## Asset Management
+  - Preload assets at startup or level load
+  - Use sprite sheets/atlases to minimize draw calls
+  - Keep image sizes optimized for mobile
+  
+  ## Core Files
+  - `engine.ts` - Main game loop and orchestration
+  - `renderer.ts` - Canvas rendering functionality
+  - `physics.ts` - Simple physics system
+  - `input.ts` - Touch and keyboard input handling
+  - `entities/` - Game object implementations
+  
+files:
+  - src/game/README.md 
