@@ -168,28 +168,37 @@ export function setupTouchControls(
       // Don't handle if we're already active
       if (joystick.active) return false;
       
-      // Avoid the jump button area and left side of screen
-      if (x < 150) return false;
+      // Avoid the jump button area
+      if (x < 150 && y > canvas.height - 150) return false;
       
-      // Set the joystick center to the initial touch point
+      // For joystick, we store the start position but don't activate movement yet
+      // This allows simple taps to be processed as jumps if there's no significant movement
       joystick.centerX = x;
       joystick.centerY = y;
       joystick.currentX = x;
       joystick.currentY = y;
-      joystick.active = true;
-      joystick.touchId = id;
+      joystick.touchId = id; // Track this touch ID
       
+      // We DO claim the touch to ensure move events come to us, but don't activate movement yet
       return true;
     },
     
     handleTouchMove(x: number, y: number, id: number) {
       // Only process if this is the touchId we're tracking
-      if (joystick.touchId !== id || !joystick.active) return;
+      if (joystick.touchId !== id) return;
       
-      // Calculate the distance from center
+      // Calculate the distance moved
       const dx = x - joystick.centerX;
       const dy = y - joystick.centerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Check if we should activate joystick movement (if not already active)
+      if (!joystick.active && distance > 20) {
+        joystick.active = true;
+      }
+      
+      // Only process movement if joystick is activated 
+      if (!joystick.active) return;
       
       // Limit the joystick movement to the maximum distance
       if (distance > joystick.maxDistance) {
@@ -237,6 +246,7 @@ export function setupTouchControls(
   // Helper to activate/deactivate all controls
   function setActive(active: boolean) {
     jumpButton.active = active;
+    // Note: joystick is activated on demand when touch movement is detected
   }
   
   // Public API

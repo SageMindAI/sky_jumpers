@@ -11,8 +11,17 @@ const inputState = {
   },
   game: null as any,
   touchControls: null as any,
-  activeTouches: new Map<number, {x: number, y: number, control: TouchControl | null}>()
+  activeTouches: new Map<number, {
+    x: number, 
+    y: number, 
+    control: TouchControl | null,
+    startTime: number, // Track when the touch started for tap detection
+  }>()
 }
+
+// Constants for tap detection
+const TAP_MAX_DURATION = 250; // ms
+const TAP_MAX_MOVEMENT = 20; // pixels
 
 // Detect if the user is on a mobile device
 function detectMobile(): boolean {
@@ -99,7 +108,10 @@ export function handleTouchStart(e: TouchEvent) {
     
     // Store touch data
     inputState.activeTouches.set(touchId, {
-      x, y, control: assignedControl
+      x, 
+      y, 
+      control: assignedControl,
+      startTime: Date.now() // Record start time for tap detection
     });
   }
 }
@@ -142,15 +154,83 @@ export function handleTouchEnd(e: TouchEvent) {
     // Check if we're tracking this touch
     const touchData = inputState.activeTouches.get(touchId);
     if (touchData) {
-      // Forward to the control if assigned
+      // Check for tap behavior - short touch with minimal movement
+      const touchDuration = Date.now() - touchData.startTime;
+      const touchDistance = Math.sqrt(
+        Math.pow(touch.clientX - touchData.x, 2) + 
+        Math.pow(touch.clientY - touchData.y, 2)
+      );
+      
+      // If the touch is claimed by a control, forward to that control
       if (touchData.control) {
         touchData.control.handleTouchEnd(touchId);
+        
+        // Check if this is a tap on the joystick that never activated
+        // This allows tap-to-jump even if the joystick claimed the touch
+        if (touchDuration < TAP_MAX_DURATION && touchDistance < TAP_MAX_MOVEMENT) {
+          // If the touch was claimed by the joystick but never activated movement,
+          // we still want to allow tap-to-jump
+          const joystickControl = inputState.touchControls.controls.find(c => 
+            c !== inputState.touchControls.controls[0]); // Find the joystick control (second in array)
+          
+          if (joystickControl && touchData.control === joystickControl) {
+            // This was a touch claimed by the joystick that never activated - treat as a tap
+            if (inputState.game && inputState.game.state.entities.player) {
+              inputState.game.state.entities.player.jump();
+              createTapRipple(touch.clientX, touch.clientY);
+            }
+          }
+        }
+      } else {
+        // If not assigned to a control, check if it's a tap
+        if (touchDuration < TAP_MAX_DURATION && touchDistance < TAP_MAX_MOVEMENT) {
+          // Trigger jump
+          if (inputState.game && inputState.game.state.entities.player) {
+            inputState.game.state.entities.player.jump();
+            
+            // Visual feedback for tap
+            createTapRipple(touch.clientX, touch.clientY);
+          }
+        }
       }
       
       // Remove from tracking
       inputState.activeTouches.delete(touchId);
     }
   }
+}
+
+// Visual feedback for tap jumps
+function createTapRipple(x: number, y: number) {
+  if (!inputState.game || !inputState.game.canvas) return;
+  
+  // Create ripple element
+  const ripple = document.createElement('div');
+  ripple.className = 'tap-ripple';
+  ripple.style.position = 'absolute';
+  ripple.style.left = `${x - 20}px`;
+  ripple.style.top = `${y - 20}px`;
+  ripple.style.width = '40px';
+  ripple.style.height = '40px';
+  ripple.style.borderRadius = '50%';
+  ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+  ripple.style.transform = 'scale(0)';
+  ripple.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+  ripple.style.pointerEvents = 'none';
+  
+  // Add to document
+  document.body.appendChild(ripple);
+  
+  // Trigger animation
+  setTimeout(() => {
+    ripple.style.transform = 'scale(1)';
+    ripple.style.opacity = '0';
+  }, 10);
+  
+  // Remove after animation
+  setTimeout(() => {
+    document.body.removeChild(ripple);
+  }, 300);
 }
 
 // Keyboard handlers for testing on desktop
