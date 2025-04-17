@@ -170,7 +170,7 @@ export function handleTouchEnd(e: TouchEvent) {
         if (touchDuration < TAP_MAX_DURATION && touchDistance < TAP_MAX_MOVEMENT) {
           // If the touch was claimed by the joystick but never activated movement,
           // we still want to allow tap-to-jump
-          const joystickControl = inputState.touchControls.controls.find(c => 
+          const joystickControl = inputState.touchControls.controls.find((c: TouchControl) => 
             c !== inputState.touchControls.controls[0]); // Find the joystick control (second in array)
           
           if (joystickControl && touchData.control === joystickControl) {
