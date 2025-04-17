@@ -25,14 +25,21 @@ export function initPlayer(x: number, y: number): Player {
         this.velocityX *= this.friction;
       }
       
-      // Cap horizontal velocity
-      if (Math.abs(this.velocityX) > this.maxVelocityX) {
-        this.velocityX = this.maxVelocityX * Math.sign(this.velocityX);
+      // Cap horizontal velocity (allow faster movement to the right)
+      if (this.velocityX > this.maxVelocityX * 1.5) {
+        this.velocityX = this.maxVelocityX * 1.5;
+      } else if (this.velocityX < -this.maxVelocityX) {
+        this.velocityX = -this.maxVelocityX;
       }
       
       // Stop if very slow
       if (Math.abs(this.velocityX) < 0.1) {
         this.velocityX = 0;
+      }
+      
+      // Add a slight auto-movement forward to encourage progression
+      if (this.velocityX === 0 && !this.isJumping) {
+        this.velocityX = 0.5; // Very slight natural rightward drift
       }
       
       // Update horizontal position based on velocity
@@ -80,6 +87,35 @@ export function initPlayer(x: number, y: number): Player {
       
       ctx.stroke()
       
+      // Figure orientation based on movement direction
+      const facingLeft = this.velocityX < -0.5;
+      const facingRight = this.velocityX > 0.5 || (!facingLeft && this.velocityX === 0);
+      
+      // Draw face direction indicator
+      if (facingRight) {
+        // Right-facing eye
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2 + 5, this.y + 8, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2 + 6, this.y + 8, 1, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Left-facing eye
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2 - 5, this.y + 8, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2 - 6, this.y + 8, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
       // Don't draw the legs twice - clear the default legs
       // if we're going to show the running animation
       if (this.isJumping) {
@@ -122,6 +158,9 @@ export function initPlayer(x: number, y: number): Player {
           this.velocityX += 0.5; // Reduced horizontal boost
         } else if (this.velocityX < -0.5) {
           this.velocityX -= 0.5; // Reduced horizontal boost
+        } else {
+          // If not moving, boost forward
+          this.velocityX = 2;
         }
       }
     },
@@ -131,7 +170,8 @@ export function initPlayer(x: number, y: number): Player {
     },
     
     moveRight(force = 0.8) {
-      this.accelerationX = force;
+      // Allow stronger acceleration to the right
+      this.accelerationX = force * 1.2;
     },
     
     stopMoving() {

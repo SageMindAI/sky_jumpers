@@ -64,9 +64,6 @@ function createEnemy(x: number, y: number): Enemy {
 }
 
 // Function to add more enemies (can be called later)
-export function addEnemy(canvasWidth: number): Enemy {
-  const x = Math.random() * canvasWidth
-  const y = Math.random() * 200
-  
+export function addEnemy(x: number, y: number): Enemy {
   return createEnemy(x, y)
 } 

@@ -63,7 +63,7 @@ export function initBuildings(canvasWidth: number, canvasHeight: number): Buildi
 }
 
 // Create a single building
-function createBuilding(x: number, y: number, width: number, height: number): Building {
+export function createBuilding(x: number, y: number, width: number, height: number): Building {
   const colors = ['#8B4513', '#A0522D', '#CD853F', '#D2691E']
   const color = colors[Math.floor(Math.random() * colors.length)]
   

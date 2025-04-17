@@ -8,7 +8,8 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
   
   // Camera position for smooth scrolling/following
   let cameraY = 0
-  const cameraSmoothing = 0.05 // Reduced smoothing for less dramatic camera movement
+  let cameraX = 0
+  const cameraSmoothing = 0.1 // Camera smoothing factor
   
   function setGameState(state: any) {
     gameState = state
@@ -24,64 +25,78 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
     ctx.fillStyle = '#87CEEB' // Sky blue
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     
-    // Only update camera if player exists and is jumping
+    // Update camera position if player exists
     if (gameState.entities.player) {
       const player = gameState.entities.player;
       
+      // Horizontal scrolling - keep player in the middle third of the screen
+      const targetCameraX = Math.max(
+        0,
+        player.x - canvas.width / 3 // Player stays in the first third of the screen
+      );
+      
+      // Vertical camera - only follow when jumping
       // Only move camera if player is significantly above the middle of the screen
-      // and is jumping - this prevents the camera from moving too much
+      // and is jumping
+      let targetCameraY = 0;
       if (player.isJumping && player.y < canvas.height / 2 - 50) {
-        // Target position is the player's y position minus half the canvas height
-        // This keeps the player in the center of the screen vertically
-        // But with a much smaller range of movement to avoid losing buildings
-        const targetCameraY = Math.max(
+        targetCameraY = Math.max(
           0, 
           Math.min(
             (player.y - (canvas.height * 0.7)) * 0.5, // Only move camera partially up
             player.y // Don't go beyond player position
           )
-        )
-        
-        // Apply very mild smoothing to camera movement
-        cameraY += (targetCameraY - cameraY) * cameraSmoothing;
-      } else if (!player.isJumping) {
-        // Gradually return camera to ground position when not jumping
+        );
+      }
+      
+      // Apply smoothing to camera movement
+      cameraX += (targetCameraX - cameraX) * cameraSmoothing;
+      cameraY += (targetCameraY - cameraY) * cameraSmoothing;
+      
+      // Reset vertical camera when not jumping
+      if (!player.isJumping) {
         cameraY *= 0.9;
       }
     }
     
     // Prevent camera from going negative
     if (cameraY < 0) cameraY = 0;
+    if (cameraX < 0) cameraX = 0;
     
-    // Apply camera transformation with protection
+    // Apply camera transformation
     ctx.save();
-    ctx.translate(0, -Math.min(cameraY, 200)); // Limit camera movement upward
+    ctx.translate(-cameraX, -cameraY);
     
-    // DEBUG: Draw a horizontal line at the camera position for reference
+    // DEBUG: Draw camera bounds for reference
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
     ctx.beginPath();
-    ctx.moveTo(0, cameraY);
-    ctx.lineTo(canvas.width, cameraY);
+    ctx.rect(cameraX, cameraY, canvas.width, canvas.height);
     ctx.stroke();
     
-    // Render buildings - no need to cull most buildings as they're not typically offscreen
+    // Render buildings - only those visible in viewport
     gameState.entities.buildings.forEach((building: any) => {
-      building.render(ctx)
+      if (isInViewport(building, cameraX, cameraY, canvas.width, canvas.height)) {
+        building.render(ctx);
+      }
     });
     
     // Render player
     if (gameState.entities.player) {
-      gameState.entities.player.render(ctx)
+      gameState.entities.player.render(ctx);
     }
     
-    // Render enemies
+    // Render enemies - only those visible in viewport
     gameState.entities.enemies.forEach((enemy: any) => {
-      enemy.render(ctx)
+      if (isInViewport(enemy, cameraX, cameraY, canvas.width, canvas.height)) {
+        enemy.render(ctx);
+      }
     });
     
-    // Render powerups
+    // Render powerups - only those visible in viewport
     gameState.entities.powerups.forEach((powerup: any) => {
-      powerup.render(ctx)
+      if (isInViewport(powerup, cameraX, cameraY, canvas.width, canvas.height)) {
+        powerup.render(ctx);
+      }
     });
     
     // Restore context for UI elements (which should be fixed on screen)
@@ -92,16 +107,33 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
     ctx.font = '24px Arial';
     ctx.fillText(`Score: ${gameState.score}`, 20, 40);
     
-    // Render jump state debug info if player exists
+    // Draw level progress indicator
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(20, 60, 200, 10);
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+    const progressWidth = Math.min(200, (cameraX / gameState.worldWidth) * 200);
+    ctx.fillRect(20, 60, progressWidth, 10);
+    
+    // Render debug info if player exists
     if (gameState.entities.player) {
       const player = gameState.entities.player;
       ctx.fillStyle = 'black';
       ctx.font = '12px Arial';
       ctx.fillText(
-        `Y: ${Math.round(player.y)} | isJumping: ${player.isJumping} | velocityY: ${player.velocityY.toFixed(1)} | CameraY: ${Math.round(cameraY)}`,
-        20, 70
+        `X: ${Math.round(player.x)} | Y: ${Math.round(player.y)} | CameraX: ${Math.round(cameraX)}`,
+        20, 90
       );
     }
+  }
+  
+  // Helper to check if entity is in viewport
+  function isInViewport(entity: any, cameraX: number, cameraY: number, width: number, height: number) {
+    return (
+      entity.x + entity.width >= cameraX &&
+      entity.x <= cameraX + width &&
+      entity.y + entity.height >= cameraY &&
+      entity.y <= cameraY + height
+    );
   }
   
   return {
