@@ -35,10 +35,34 @@ git clone [repository-url]
 
 # Install dependencies
 pnpm install
+# or if pnpm is not available
+npm install
 
 # Start the development server
 pnpm dev
+# or
+npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Game Controls
+- **Mobile**: Tap to jump, swipe left/right to move
+- **Desktop**: Space/Up Arrow to jump, Left/Right Arrows to move
+
+## Current Status & Known Issues
+- Basic gameplay implemented with buildings, player, and enemies
+- The game is still in early development
+- For best experience, test on a mobile device or emulator
+- Powerups are implemented in code but not yet spawning in the game
+
+## Future Improvements
+- Add increasing difficulty over time
+- Implement a proper game over screen
+- Add sound effects and background music
+- Add more diverse enemy types
+- Implement a high score leaderboard
+- Add more varied power-ups
 
 ## Documentation Strategy
 This project uses hierarchical READMEs throughout the codebase:
