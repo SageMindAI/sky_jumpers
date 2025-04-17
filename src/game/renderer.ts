@@ -1,4 +1,6 @@
 // Renderer for the game
+import { setupBackgrounds } from './backgrounds';
+
 export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
   // Setup any rendering configuration
   ctx.imageSmoothingEnabled = true
@@ -11,6 +13,9 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
   let cameraX = 0
   const cameraSmoothing = 0.1 // Camera smoothing factor
   
+  // Initialize the parallax background system
+  const backgrounds = setupBackgrounds(canvas, ctx);
+  
   function setGameState(state: any) {
     gameState = state
   }
@@ -20,10 +25,6 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
     
     // Clear the entire canvas first
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
-    // Draw background first (before any transformations)
-    ctx.fillStyle = '#87CEEB' // Sky blue
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
     
     // Update camera position if player exists
     if (gameState.entities.player) {
@@ -63,7 +64,10 @@ export function setupRenderer(canvas: HTMLCanvasElement, ctx: CanvasRenderingCon
     if (cameraY < 0) cameraY = 0;
     if (cameraX < 0) cameraX = 0;
     
-    // Apply camera transformation
+    // Render the parallax backgrounds first (fixed position relative to camera)
+    backgrounds.renderBackgrounds(cameraX, cameraY, performance.now());
+    
+    // Apply camera transformation for game entities
     ctx.save();
     ctx.translate(-cameraX, -cameraY);
     

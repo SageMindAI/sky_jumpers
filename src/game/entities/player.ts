@@ -2,6 +2,28 @@ import { Player } from '../engine'
 import { JUMP_VELOCITY } from '../physics'
 
 export function initPlayer(x: number, y: number): Player {
+  // Animation states and timing
+  const animations = {
+    idle: {
+      frameCount: 4,
+      frameDuration: 200, // ms per frame
+      currentFrame: 0,
+      lastFrameTime: 0
+    },
+    running: {
+      frameCount: 6,
+      frameDuration: 100,
+      currentFrame: 0,
+      lastFrameTime: 0
+    },
+    jumping: {
+      frameCount: 2,
+      frameDuration: 300,
+      currentFrame: 0,
+      lastFrameTime: 0
+    }
+  };
+  
   return {
     x,
     y,
@@ -11,10 +33,12 @@ export function initPlayer(x: number, y: number): Player {
     velocityX: 0,
     maxVelocityX: 5,
     accelerationX: 0,
-    friction: 0.9, // Friction to slow down horizontal movement
+    friction: 0.9,
     isJumping: false,
     jumpForce: JUMP_VELOCITY,
-    jumpCooldown: 0, // Add a cooldown to prevent rapid jumps
+    jumpCooldown: 0,
+    facingLeft: false,
+    animations,
     
     update(deltaTime: number) {
       // Apply horizontal movement with friction
@@ -44,99 +68,359 @@ export function initPlayer(x: number, y: number): Player {
       if (this.jumpCooldown > 0) {
         this.jumpCooldown -= deltaTime;
       }
+      
+      // Update facing direction
+      if (this.velocityX < -0.1) {
+        this.facingLeft = true;
+      } else if (this.velocityX > 0.1) {
+        this.facingLeft = false;
+      }
+      
+      // Update animation frames
+      const now = Date.now();
+      
+      // Determine current animation
+      let currentAnim;
+      if (this.isJumping) {
+        currentAnim = this.animations.jumping;
+      } else if (Math.abs(this.velocityX) > 0.5) {
+        currentAnim = this.animations.running;
+      } else {
+        currentAnim = this.animations.idle;
+      }
+      
+      // Update frame if needed
+      if (now - currentAnim.lastFrameTime > currentAnim.frameDuration) {
+        currentAnim.currentFrame = (currentAnim.currentFrame + 1) % currentAnim.frameCount;
+        currentAnim.lastFrameTime = now;
+      }
     },
     
     render(ctx: CanvasRenderingContext2D) {
-      // Draw player as stick figure
-      ctx.fillStyle = 'black'
+      ctx.save();
       
-      // Head
-      ctx.beginPath()
-      ctx.arc(this.x + this.width / 2, this.y + 10, 10, 0, Math.PI * 2)
-      ctx.fill()
+      // Flip context if facing left
+      if (this.facingLeft) {
+        ctx.translate(this.x + this.width, 0);
+        ctx.scale(-1, 1);
+        ctx.translate(-this.x, 0);
+      }
+      
+      // Determine current animation state
+      let animState;
+      let bounceEffect = 0;
+      
+      if (this.isJumping) {
+        animState = 'jumping';
+        bounceEffect = Math.sin(Date.now() / 150) * 2;
+      } else if (Math.abs(this.velocityX) > 0.5) {
+        animState = 'running';
+        // Add a slight bounce when running
+        bounceEffect = Math.sin(Date.now() / 100) * 3;
+      } else {
+        animState = 'idle';
+        // Gentle breathing animation when idle
+        bounceEffect = Math.sin(Date.now() / 600) * 1.5;
+      }
+      
+      const currentFrame = this.animations[animState].currentFrame;
       
       // Body
-      ctx.beginPath()
-      ctx.moveTo(this.x + this.width / 2, this.y + 20)
-      ctx.lineTo(this.x + this.width / 2, this.y + 35)
-      ctx.stroke()
+      this.renderBody(ctx, bounceEffect, animState, currentFrame);
       
-      // Arms - different pose when jumping
-      const armOffset = this.isJumping ? 
-        Math.min(5, Math.abs(this.velocityY) / 2) : // Arms up when jumping based on velocity
-        Math.sin(Date.now() / 150) * 2;             // Gentle swing when not jumping
+      // Shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.beginPath();
+      ctx.ellipse(
+        this.x + this.width/2,
+        this.y + this.height - 2,
+        this.width/2,
+        5,
+        0, 0, Math.PI * 2
+      );
+      ctx.fill();
       
-      ctx.beginPath()
+      ctx.restore();
+    },
+    
+    renderBody(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2 - 10 + bounceEffect;
       
-      if (this.isJumping) {
-        // Arms up when jumping
-        ctx.moveTo(this.x + this.width / 2, this.y + 25)
-        ctx.lineTo(this.x + 10, this.y + 25 - armOffset)
-        ctx.moveTo(this.x + this.width / 2, this.y + 25)
-        ctx.lineTo(this.x + this.width - 10, this.y + 25 - armOffset)
+      // Base body shape - slightly rounded rectangle
+      ctx.fillStyle = '#3498db'; // Blue
+      
+      // Main body - adjust shape based on animation
+      if (animState === 'jumping') {
+        // Stretched body for jumping
+        ctx.beginPath();
+        ctx.roundRect(
+          this.x, 
+          this.y - 5 + bounceEffect, 
+          this.width, 
+          this.height - 10, 
+          8
+        );
+        ctx.fill();
+        
+        // Arms up
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        // Left arm
+        ctx.roundRect(
+          this.x - 5, 
+          this.y + 5 + bounceEffect, 
+          8, 
+          20, 
+          4
+        );
+        // Right arm
+        ctx.roundRect(
+          this.x + this.width - 3, 
+          this.y + 5 + bounceEffect, 
+          8, 
+          20, 
+          4
+        );
+        ctx.fill();
       } else {
-        // Normal arm position
-        ctx.moveTo(this.x + 10, this.y + 25 + armOffset)
-        ctx.lineTo(this.x + this.width - 10, this.y + 25 - armOffset)
+        // Normal body
+        ctx.beginPath();
+        ctx.roundRect(
+          this.x, 
+          this.y + bounceEffect, 
+          this.width, 
+          this.height - 15, 
+          8
+        );
+        ctx.fill();
+        
+        // Arms
+        const armSwing = animState === 'running' ? 
+          Math.sin(Date.now() / 100 + frame) * 10 : 
+          Math.sin(Date.now() / 400) * 3;
+        
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        // Left arm
+        ctx.roundRect(
+          this.x - 5, 
+          this.y + 10 + bounceEffect + armSwing, 
+          8, 
+          20, 
+          4
+        );
+        // Right arm
+        ctx.roundRect(
+          this.x + this.width - 3, 
+          this.y + 10 + bounceEffect - armSwing, 
+          8, 
+          20, 
+          4
+        );
+        ctx.fill();
       }
       
-      ctx.stroke()
+      // Legs
+      this.renderLegs(ctx, bounceEffect, animState, frame);
       
-      // Figure orientation based on movement direction
-      const facingLeft = this.velocityX < -0.5;
-      const facingRight = this.velocityX > 0.5 || (!facingLeft && this.velocityX === 0);
+      // Head
+      this.renderHead(ctx, bounceEffect, animState, frame);
+    },
+    
+    renderLegs(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+      // Legs animations
+      ctx.fillStyle = '#2980b9'; // Slightly darker blue
       
-      // Draw face direction indicator
-      if (facingRight) {
-        // Right-facing eye
-        ctx.fillStyle = 'white';
+      if (animState === 'running') {
+        // Running legs with alternating positions
+        const legOffset = Math.sin(Date.now() / 100) * 8;
+        
+        // Left leg
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2 + 5, this.y + 8, 3, 0, Math.PI * 2);
+        ctx.roundRect(
+          this.x + 5, 
+          this.y + this.height - 25 + bounceEffect + legOffset, 
+          8, 
+          25, 
+          4
+        );
         ctx.fill();
         
-        ctx.fillStyle = 'black';
+        // Right leg
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2 + 6, this.y + 8, 1, 0, Math.PI * 2);
+        ctx.roundRect(
+          this.x + this.width - 13, 
+          this.y + this.height - 25 + bounceEffect - legOffset, 
+          8, 
+          25, 
+          4
+        );
+        ctx.fill();
+      } else if (animState === 'jumping') {
+        // Jumping legs (together and bent)
+        ctx.beginPath();
+        ctx.roundRect(
+          this.x + 8, 
+          this.y + this.height - 20 + bounceEffect, 
+          14, 
+          20, 
+          5
+        );
         ctx.fill();
       } else {
-        // Left-facing eye
-        ctx.fillStyle = 'white';
+        // Idle legs (slightly apart)
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2 - 5, this.y + 8, 3, 0, Math.PI * 2);
+        ctx.roundRect(
+          this.x + 5, 
+          this.y + this.height - 25 + bounceEffect, 
+          8, 
+          25, 
+          4
+        );
         ctx.fill();
         
-        ctx.fillStyle = 'black';
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2 - 6, this.y + 8, 1, 0, Math.PI * 2);
+        ctx.roundRect(
+          this.x + this.width - 13, 
+          this.y + this.height - 25 + bounceEffect, 
+          8, 
+          25, 
+          4
+        );
+        ctx.fill();
+      }
+    },
+    
+    renderHead(ctx: CanvasRenderingContext2D, bounceEffect: number, animState: string, frame: number) {
+      const headY = this.y - 15 + bounceEffect;
+      
+      // Head
+      const gradient = ctx.createRadialGradient(
+        this.x + this.width/2 - 2, 
+        headY + 10, 
+        2,
+        this.x + this.width/2,
+        headY + 15,
+        20
+      );
+      gradient.addColorStop(0, '#3498db');
+      gradient.addColorStop(1, '#2980b9');
+      
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.width/2,
+        headY + 15,
+        20,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+      
+      // Face features
+      
+      // Eyes
+      const eyeY = headY + 10;
+      const blinkState = Math.floor(Date.now() / 3000) % 10 === 0;
+      
+      if (blinkState) {
+        // Blinking eyes
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        
+        // Left eye
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width/2 - 8, eyeY);
+        ctx.lineTo(this.x + this.width/2 - 3, eyeY);
+        ctx.stroke();
+        
+        // Right eye
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width/2 + 3, eyeY);
+        ctx.lineTo(this.x + this.width/2 + 8, eyeY);
+        ctx.stroke();
+      } else {
+        // Normal eyes
+        ctx.fillStyle = 'white';
+        
+        // Left eye
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width/2 - 6,
+          eyeY,
+          4,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Right eye
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width/2 + 6,
+          eyeY,
+          4,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Pupils
+        ctx.fillStyle = 'black';
+        
+        // Pupil position changes based on movement
+        const pupilOffset = animState === 'running' ? 1.5 : 0;
+        
+        // Left pupil
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width/2 - 5 + pupilOffset,
+          eyeY,
+          2,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Right pupil
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width/2 + 7 + pupilOffset,
+          eyeY,
+          2,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
       }
       
-      // Don't draw the legs twice - clear the default legs
-      // if we're going to show the running animation
-      if (this.isJumping) {
-        // Legs in jumping position - together and slightly bent
-        ctx.beginPath()
-        ctx.moveTo(this.x + this.width / 2, this.y + 35)
-        ctx.lineTo(this.x + this.width / 2, this.y + 45)
-        ctx.stroke()
-      } else if (Math.abs(this.velocityX) <= 0.5) {
-        // Legs - normal stance
-        ctx.beginPath()
-        ctx.moveTo(this.x + this.width / 2, this.y + 35)
-        ctx.lineTo(this.x + 10, this.y + 50)
-        ctx.moveTo(this.x + this.width / 2, this.y + 35)
-        ctx.lineTo(this.x + this.width - 10, this.y + 50)
-        ctx.stroke()
+      // Mouth
+      if (animState === 'jumping') {
+        // Open mouth when jumping
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.ellipse(
+          this.x + this.width/2,
+          headY + 25,
+          5,
+          3,
+          0, 0, Math.PI * 2
+        );
+        ctx.fill();
       } else {
-        // Running animation
-        const legOffset = Math.sin(Date.now() / 100) * 5; // Increased amplitude
-        
-        ctx.beginPath()
-        ctx.moveTo(this.x + this.width / 2, this.y + 35)
-        ctx.lineTo(this.x + 10 + legOffset, this.y + 50)
-        ctx.moveTo(this.x + this.width / 2, this.y + 35)
-        ctx.lineTo(this.x + this.width - 10 - legOffset, this.y + 50)
-        ctx.stroke()
+        // Smile
+        ctx.strokeStyle = '#34495e';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(
+          this.x + this.width/2,
+          headY + 20,
+          8,
+          0.2,
+          Math.PI - 0.2
+        );
+        ctx.stroke();
       }
     },
     
