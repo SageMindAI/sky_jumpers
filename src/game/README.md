@@ -1,14 +1,73 @@
-# Game Engine
+# Sky Jumpers: Game Engine Implementation
 
-This directory contains the core game engine implementation for Sky Jumpers.
+This directory contains the core game loop and rendering functionality for Sky Jumpers.
 
 ## Key Files
+- `engine.ts` - The core game engine that handles the main loop
+- `physics.ts` - Handles collisions, gravity, and movement
+- `renderer.ts` - Handles drawing to the canvas
+- `entities/` - All game objects (player, buildings, enemies, etc.)
+- `systems/` - Game systems (camera, scoring, spawning, etc.)
 
-- `engine.ts` - Main game loop and engine initialization
-- `renderer.ts` - Canvas rendering functionality with camera system
-- `physics.ts` - Simple physics system for gravity, collisions, etc.
-- `input.ts` - Touch and keyboard input handling
-- `entities/` - Game object implementations
+## Core Game Loop
+The game uses a custom game loop based on `requestAnimationFrame` to:
+1. Process inputs
+2. Update game state (physics, collisions, spawning)
+3. Render the frame
+4. Repeat
+
+See `engine.ts` for implementation details.
+
+## Physics System
+Sky Jumpers uses a simple physics system with the following key constants:
+
+```typescript
+// Current physics constants
+const GRAVITY = 0.4;
+const JUMP_VELOCITY = -8;
+const TERMINAL_VELOCITY = 10;
+```
+
+These can be tuned for different gameplay feels.
+
+## Side-Scrolling Mechanics
+The game is designed as a side-scroller with these key elements:
+
+1. **Infinite Level Generation**: Buildings and obstacles are dynamically generated ahead of the player and removed once they're off-screen
+2. **Horizontal Camera Movement**: The camera follows the player's horizontal movement while allowing vertical jumps
+3. **Forward Momentum**: The game encourages rightward progression with faster movement to the right
+4. **Distance-Based Progression**: Score and difficulty increase with horizontal distance traveled
+
+## Camera System
+The camera system in `systems/camera.ts` handles:
+- Tracking the player horizontally with slight lead distance
+- Allowing vertical freedom during jumps
+- Setting view boundaries and handling screen transitions
+
+## Input Handling
+Input is managed through a unified interface that works across:
+- Touch devices (tap to jump, swipe for movement)
+- Keyboard (arrow keys/space)
+
+See `systems/input.ts` for detailed implementation.
+
+## Spawn System
+The spawn system:
+- Generates buildings, powerups, and enemies ahead of the player
+- Increases spawn frequency and speed according to player progress
+- Ensures playable paths are always generated
+
+## Safety Features
+- Frame rate independent physics using delta time
+- Error boundaries to prevent game crashes
+- Debug flags for development
+
+## KISS Principle (Keep It Simple, Stupid)
+We follow the KISS principle throughout the engine:
+- Simple rectangular collision over complex shapes
+- Direct input mapping rather than complex gesture detection
+- Forward-only level generation to avoid complex tracking systems
+- Limited entity types with focused behaviors
 
 ## Game Entities
 
@@ -17,82 +76,6 @@ This directory contains the core game engine implementation for Sky Jumpers.
 - `entities/enemy.ts` - Flying enemies/obstacles
 - `entities/powerup.ts` - Collectible items and power-ups
 - `entities/world.ts` - World generation and management
-
-## Core Game Loop
-
-The game follows a simple loop pattern:
-
-1. Process input (touch/keyboard)
-2. Update game state
-3. Render to canvas
-4. Repeat
-
-```typescript
-// Simplified example
-function gameLoop(timestamp) {
-  const deltaTime = timestamp - lastTime;
-  
-  processInput();
-  updateGameState(deltaTime);
-  render();
-  
-  requestAnimationFrame(gameLoop);
-}
-```
-
-## Physics System
-
-The physics system is intentionally simple:
-
-- Gravity-based jumping with adjustable parameters
-- Simple rectangle collision detection
-- Momentum-based horizontal movement with friction
-- Delta-time normalization for consistent gameplay across devices
-
-Constants are tuned for mobile gameplay:
-```typescript
-const GRAVITY = 0.4
-const JUMP_VELOCITY = -8
-const TERMINAL_VELOCITY = 10
-```
-
-## Camera System
-
-A minimalist camera system follows the player during jumps:
-
-- Subtle vertical tracking that keeps buildings in view
-- Limited movement range to prevent disorientation
-- Smooth transitions using interpolation
-- Automatic reset to base position after jumping
-
-## Input Handling
-
-Touch controls are the primary input method:
-
-- Tap/swipe up to jump
-- Swipe left/right to move
-- Tap on power-ups to activate
-
-Keyboard controls are available as a fallback for desktop testing:
-
-- Space/Arrow Up to jump
-- Left/Right arrows to move
-- R key to reset player position
-
-## Safety Features
-
-- Player reset if they go too far off-screen
-- Emergency reset button in UI
-- Automatic building regeneration on major screen resize
-- Boundary checks to keep player in playable area
-
-## KISS Principle
-
-This engine purposely avoids complex implementations. When adding features:
-
-1. Start with the simplest implementation that works
-2. Test on mobile devices
-3. Optimize only if performance issues arise
 
 ## References
 

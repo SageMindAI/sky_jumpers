@@ -3,13 +3,17 @@
 A mobile-first web game where stick-figure heroes leap across rooftops, dodge flying enemies, and save their world from a solar anomaly.
 
 ## Core Purpose
-Simple, fun, touch-based platforming game playable on mobile devices and deployable to Vercel.
+Simple, fun, touch-based side-scrolling platformer game playable on mobile devices and deployable to Vercel.
 
 ## Key Features
 - Intuitive touch controls for jumping between buildings
+- Infinite side-scrolling level generation
+- Camera that tracks player horizontally while allowing vertical jumps
+- Forward-focused gameplay with optimized movement mechanics
 - Dodge dynamic flying enemies
 - Collect power-ups and energy orbs
 - Whimsical hand-drawn art style
+- Progressive difficulty as you travel further
 
 ## Tech Stack
 - **Framework**: Next.js with TypeScript
@@ -47,22 +51,24 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Game Controls
-- **Mobile**: Tap to jump, swipe left/right to move
+- **Mobile**: Tap to jump, swipe left/right to move (right movement is faster for progression)
 - **Desktop**: Space/Up Arrow to jump, Left/Right Arrows to move
 
 ## Current Status & Known Issues
-- Basic gameplay implemented with buildings, player, and enemies
+- Infinite side-scrolling gameplay implemented with dynamic building generation
+- Player position is optimized for forward (rightward) movement
+- Enemies and powerups spawn ahead of the player as they progress
 - The game is still in early development
 - For best experience, test on a mobile device or emulator
-- Powerups are implemented in code but not yet spawning in the game
+- Score increases based on distance traveled
 
 ## Future Improvements
-- Add increasing difficulty over time
+- Add more diverse enemy types with unique movement patterns
 - Implement a proper game over screen
 - Add sound effects and background music
-- Add more diverse enemy types
 - Implement a high score leaderboard
-- Add more varied power-ups
+- Add more varied power-ups with unique effects
+- Visual enhancements for distance milestones
 
 ## Documentation Strategy
 This project uses hierarchical READMEs throughout the codebase:

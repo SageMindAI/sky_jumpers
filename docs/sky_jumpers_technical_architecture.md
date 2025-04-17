@@ -1,7 +1,7 @@
 # Sky Jumpers - Technical Architecture
 
 ## Overview
-This document outlines the technical architecture for "Sky Jumpers: The Battle Above the Blocks," a mobile-first web game designed primarily for touchscreen devices and deployable on Vercel.
+This document outlines the technical architecture for "Sky Jumpers: The Battle Above the Blocks," a mobile-first web game designed primarily for touchscreen devices and deployable on Vercel. The game features infinite side-scrolling platforming gameplay with procedurally generated levels.
 
 ## Core Technologies
 
@@ -34,7 +34,8 @@ sky_jumpers/
 │   │   ├── engine.ts    # Core game loop
 │   │   ├── entities/    # Game objects (player, platforms, enemies)
 │   │   ├── physics.ts   # Simple physics system
-│   │   └── renderer.ts  # Canvas rendering
+│   │   ├── renderer.ts  # Canvas rendering with camera system
+│   │   └── input.ts     # Touch and keyboard input handling
 │   ├── hooks/           # Custom React hooks
 │   ├── pages/           # Next.js pages
 │   ├── styles/          # Global styles
@@ -46,13 +47,20 @@ sky_jumpers/
 └── README.md            # Documentation
 ```
 
-## Mobile-First Considerations
+## Game Mechanics
 
-### Controls
+### Side-Scrolling Implementation
+- **Horizontal Camera System**: Camera follows player's horizontal movement while allowing vertical jumps
+- **Infinite Level Generation**: Buildings and obstacles are procedurally generated ahead of the player
+- **Dynamic Difficulty**: Gap distances and platform heights increase gradually as the player progresses
+- **Resource Management**: Entities that are no longer visible are removed to conserve memory
+
+### Player Controls
 - **Touch Controls**: Implement simple, intuitive touch controls
-  - Swipe gestures for jumping/dashing
-  - Tap for actions
-  - Optional on-screen buttons for complex actions
+  - Tap to jump
+  - Swipe left/right to move (right swipes produce faster movement to encourage progression)
+  - Double-tap for special actions
+- **Keyboard Fallback**: Arrow keys and space bar for desktop testing
 
 ### Responsive Design
 - **Viewport Management**: Use viewport meta tags to ensure proper scaling
@@ -64,12 +72,14 @@ sky_jumpers/
 - **Sprite Atlases**: Combine sprites into atlases to reduce HTTP requests
 - **Lazy Loading**: Load levels and assets progressively
 - **Request Animation Frame**: For smooth animation loop
-- **Offscreen Rendering**: Only render visible elements
+- **Offscreen Rendering**: Only render entities visible within the viewport
+- **Entity Culling**: Remove entities that are far behind the player
 
 ## State Management
 - **Game State**: Managed within the game engine using a simple state machine
 - **App State**: React Context API for UI-related state
-- **Persistence**: LocalStorage for saving game progress
+- **Persistence**: LocalStorage for saving high scores and game progress
+- **Distance Tracking**: Score increases based on horizontal distance traveled
 
 ## Build and Deployment
 
@@ -88,6 +98,8 @@ sky_jumpers/
 - **Progressive Web App (PWA)**: Allow installation on mobile devices
 - **Analytics**: Implement basic analytics to track player behavior
 - **Online Features**: High scores or simple multiplayer if needed
+- **Visual Enhancements**: More elaborate backgrounds and parallax effects
+- **Advanced Enemy Patterns**: More diverse enemy types with unique movement patterns
 
 ## Development Workflow
 1. Local development using `pnpm dev`
